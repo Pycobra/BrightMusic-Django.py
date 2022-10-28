@@ -1,0 +1,87 @@
+{% comment %} {% load static %}
+{% block styleSheets %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/now-playing.css' %}">
+{% endblock %}
+
+
+
+<section id="now-playing">
+                
+{% if id %}
+ <div class='now-playing-wrap'>
+    <span class='img-holder'> 
+        <img src={{url}} />
+        <div class='img-txt'>
+            <span class='song'>{{title}} || {{label}} ({{format}})</span>
+            <span class='name'>{{artistName}}</span>
+        </div>
+        <div class='img-icon'>
+            <span class='html-icon'>&#10022;</span>
+            <span class='html-icon'>&#10138;</span>
+        </div>
+    </span>
+    <span data-id={{id}} 
+            data-obj={{obj}}
+            class='song-li'>
+            <div class='song-li-wrap'>
+                <div class='item-1'>
+                    <div class='place-1'>
+                        {% with checked="{{obj.selected}}" data="{{id}}" dataIndex="{{id}}" inputType='CHECKBOX2' name='imageSelected{id}' %}
+                            {% include '../../checkbox-input/checkbox-input.html' %}
+                        {% endwith %}
+                            <div class="hide-div1">{{title}}...</div>
+                        <div>
+                            <span>{% if title > 15 %}{{title}}... {% else %} title {% endif %}</span>
+                            <span class='double-bar'>||</span>
+                            <span>{% if label > 15 %}{{label}}... {% else %} Record {% endif %}</span>
+                        </div>
+                    </div>
+                    <div class='place-2'><span><CaretNextWhite /></span><span class="html-icon">&#10011;</span></div>
+                </div>
+                <span>{% if artistName > 15 %}{{artistName}}... {% else %} Record {% endif %}</span>
+                <span class='item-3'>{{release_year}}</span>
+                <span class='item-4'>{{minutes}}</span>
+            </div>
+    </span>
+    </div>
+ {% else %}
+ <div class='now-playing-wrap'>
+      <span class='img-holder2'>
+          <img src='../../media/images/song-pic/song9.PNG' />
+          <div class='img-txt'>
+              <span class='name'>You Have Not Chosen A Song</span>
+          </div>
+      </span>
+  </div>
+{% endif %}
+</section> {% endcomment %}
+{% comment %} <script>
+    const HandleSongclick = (e, obj) => {
+        setCurrentlyPlayingSong({id:obj.id, artistName:obj.artistName, format:obj.format, title:obj.title, label:obj.label, 
+            url:obj.url, minutes:obj.minutes, release_year:obj.release_year})
+        const songLi = e.target.closest('.song-li-wrap')
+        // const {id} = songLi.dataset
+
+        //TO ADJUST THE HEIGHT AND MAKE WAY FOR BOTTOM PALLETE TO SLIDE UP
+        Array.from(document.querySelectorAll('.song-li > .song-li-wrap')).map(itm =>  itm !== songLi
+            ? itm.classList.remove('song-li-change-bg') : null)
+        songLi.classList.toggle('song-li-change-bg')
+        const mainPlace_2 = songLi.firstElementChild.firstElementChild.nextElementSibling
+        const otherPlace_2 = Array.from(document.querySelectorAll('.song-li > .song-li-wrap > .item-1 > .place-2')).map(itm =>  
+            itm !== mainPlace_2 ? itm.classList.remove('display-place-2') : null)
+        const otherFirstDIV = Array.from(document.querySelectorAll('.song-li > .song-li-wrap .item-1 > .place-1 > .hide-div1'))
+        const otherSecondDIV = Array.from(document.querySelectorAll('.song-li > .song-li-wrap .item-1 > .place-1 > .hide-div2'))
+        const mainFirstDIV = songLi.firstElementChild.firstElementChild.firstElementChild.nextElementSibling
+        const mainSecondDIV = mainFirstDIV.nextElementSibling
+        // console.log(otherSecondDIV)
+        // console.log(otherFirstDIV)
+        if (otherSecondDIV.length !== 0){
+            // otherFirstDIV.map(itm => itm.classList.toggle('hide-div1'))
+            otherSecondDIV.map(itm => itm.setAttribute('display', 'block'))
+        }
+        mainFirstDIV.classList.toggle('hide-div1')
+        mainSecondDIV.classList.toggle('hide-div2')
+        mainPlace_2.classList.toggle('display-place-2')
+        songLi.querySelector('.item-1').classList.toggle('re-spacing')
+    } 
+</script> {% endcomment %}

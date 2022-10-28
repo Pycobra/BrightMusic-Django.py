@@ -1,0 +1,36 @@
+<section id="menubar-hover">
+ <div class="list-place">
+    {% with MenuBarType='true' %}
+        {% include '../form-group/form-group.html' %}
+    {% endwith %}
+     <ul>
+         <li>home</li>
+         <li>Podcast</li>
+         <li>Download&nbsp;App</li>
+     </ul>
+     <div class="sign-up" onClick={HandleAccount()}><span>Sign up</span><Account /></div>
+ </div>
+</section>
+<script>
+    document.querySelector('.menubar.html-icon').addEventListener('click', e => HandleClick(e))
+    document.querySelector('.menutimes.html-icon').addEventListener('click', e => HandleClick(e))
+    
+    const HandleClick  = (e) => {
+        console.log(e.target)
+        if (e.target.classList.contains('menubar')){
+            document.querySelector('#header > .content > .box-2 > .menubar').setAttribute('style', 'display:none')
+            document.querySelector('#header > .content > .box-2 > .menutimes').setAttribute('style', 'display: block;')
+            document.querySelector('section#menubar-hover').classList.remove('slide-up-menu-bar')
+            document.querySelector('section#menubar-hover').classList.add('slide-down-menu-bar')
+            document.querySelector('section#menubar-hover.slide-down-menu-bar').setAttribute('style', 'animation: slideDownMenuBar 500ms ease-in 1;')
+            //display:block')
+        }
+        if (e.target.classList.contains('menutimes')){
+            document.querySelector('#header > .content > .box-2 > .menutimes').setAttribute('style', 'display:none')
+            document.querySelector('#header > .content > .box-2 > .menubar').setAttribute('style', 'display:block')
+            document.querySelector('section#menubar-hover').classList.remove('slide-down-menu-bar')
+            document.querySelector('section#menubar-hover').classList.add('slide-up-menu-bar')
+            document.querySelector('section#menubar-hover.slide-up-menu-bar').setAttribute('style', 'animation: slideUpMenuBar 500ms ease-in 1;')
+        }
+    }
+</script>

@@ -1,0 +1,34 @@
+
+
+
+<select type="{{type}}"
+    name="{{name}}" 
+    class="select-fields {% if selecttype == 'MidInputType' %} mid-size
+               {% elif selecttype == 'MidInputType2' %} mid-size2
+               {% endif %}">
+    <option value={{none}}>--- --- --- --- --- ---</option>
+    <option>Genre</option>
+    <option>Artist</option>
+    <option>Release Year</option>
+    <option>Label</option>
+    {% comment %} {% if data|length > 0 %}
+    {% for i in data %}
+        <option>Genre</option>
+        <option>Artist</option>
+        <option>Release Year</option>
+        %}
+    {% endif %} {% endcomment %}
+</select>
+<script>
+    document.querySelector('select').addEventListener('change', e => { 
+                        const {name, value} = e.target;
+                        makeAjaxRequest(e, "GET", 
+                            "{% url 'songs_:selectedSortedSearch' %}", 
+                            { 
+                                csrfmiddlewaretoken: "{{ csrf_token }}", 
+                                currentPage: 'SORT-PAGE',
+                                value
+                            }
+                        )
+    })
+</script>

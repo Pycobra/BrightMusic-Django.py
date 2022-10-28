@@ -1,0 +1,83 @@
+
+
+
+
+<span data-id={{index}}
+        data-obj={{obj}}
+        class='song-li'>
+    <div class='song-li-wrap'
+        id='normal-black-color'>
+        <div class='item-1'>
+            <div class='place-1'>
+                {% comment %} {% with checked=obj.selected
+                    data=index
+                    dataIndex=index
+                    inputType='CHECKBOX2'
+                    name=f'imageSelected{position}' %}
+                    {% include '../checkbox-input/checkbox-input.html' %}
+                {% endwith %} {% endcomment %}
+                <div class="hide-div1">{{obj.title|slice:":13"}}...</div>
+                <div>
+                    <span>{% if obj.title|length > 15 %} {{obj.title|slice:":13"}}... {% else %} {{obj.title}} {% endif %}</span>
+                    <span class='double-bar'>||</span>
+                    <span>{% if obj.label|length > 15 %} {{obj.label|slice:":13"}}... {% else %} {{obj.label}} {% endif %} Record</span>
+                </div>
+            </div>
+            <div class='place-2'><span><i class="fa fa-caret-down"></span><span class="html-icon">&#10011;</span></div>
+        </div>
+        <span>{% if obj.artistName|length > 15 %} {{obj.artistName|slice:":13"}}... {% else %} {{obj.artistName}} {% endif %}</span>
+        <span class='item-3'>{{obj.release_year}}</span>
+        <span class='item-4'>{{obj.minutes}}</span>
+    </div>
+</span>
+{% comment %} <script>
+    document.querySelector('.song-li').addEventListener('mouseover', handleSongMousever(this))
+    document.querySelector('.song-li').addEventListener('mouseleave', handleSongMousever(this, this.dataset.obj))
+    const handleSongMouseLeave = (e) => {
+        Array.from(document.querySelectorAll('div.song-list-card'))
+            .map(itm => itm.remove())
+    }    
+    const handleSongMousever = (e, obj) => {
+        console.log(e.target.class)
+        if (e.target.class === "song-li-wrap"){
+            const toolTipElement = document.createElement('div')
+            const span1 = document.createElement('span')
+            const span2 = document.createElement('span')
+            const span3 = document.createElement('span')
+            const span4 = document.createElement('span')
+            const span5 = document.createElement('span')
+            const span6 = document.createElement('span')
+            
+            toolTipElement.class = 'song-list-card'
+            span1.class = 'span-1'
+            span2.class = 'span-2'
+            span3.class = 'span-3'
+            span4.class = 'span-4'
+            span5.class = 'span-5'
+            span6.class = 'span-6'
+            span1.textContent = `${obj.title} || ${obj.artistName} (${obj.format} Download)`
+            span2.textContent = `Item Format  -  ${obj.format}`
+            span3.textContent = `Genre  -  ${obj.genre}`
+            span4.textContent = `Length  -  ${obj.minutes}`
+            span5.textContent = `Label  -  ${obj.label} Record`
+            span6.textContent = `Release Year  -  ${obj.release_year}`
+            
+            const hostElPosLeft=e.target.offsetLeft
+            const hostElPosTop=e.target.offsetTop
+            const hostElHeight=e.target.clientHeight
+            const hostElWidth=e.target.clientWidth
+
+            const x = hostElPosLeft + hostElWidth -20
+            const y = hostElPosTop - 40
+            
+            toolTipElement.style.left = '30%' //x + 'px'
+            toolTipElement.style.top = '-120px' //y +'px'
+            toolTipElement.insertAdjacentElement('afterbegin', span1)
+            toolTipElement.insertAdjacentElement('afterbegin', span2)
+            toolTipElement.insertAdjacentElement('afterbegin', span3)
+            toolTipElement.insertAdjacentElement('afterbegin', span4)
+            toolTipElement.insertAdjacentElement('afterbegin', span5)
+            e.target.insertAdjacentElement('beforebegin', toolTipElement)
+        }
+    }
+</script> {% endcomment %}

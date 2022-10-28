@@ -1,0 +1,15 @@
+{% load static %}
+{% block styleSheets %}
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'styles/form-group.css' %}"> {% endcomment %}
+{% endblock %}
+
+
+<form class="search-form {% if HeaderType == 'true' %} header-form
+            {% elif SideBarType == 'true' %} side-bar-form 
+            {% elif MenuBarType == 'true' %} menu-bar-form
+            {% endif %}">
+            {% with inputtype='SearchInputType' type="text" placeholder="SEARCH" name="search1" required=true %}
+                {% include '../form-input/form-input.html' %}
+            {% endwith %}
+    <span class="search-icon"><i class="fa fa-search icon" ></i></span>
+</form>

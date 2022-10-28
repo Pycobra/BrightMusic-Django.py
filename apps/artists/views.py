@@ -1,0 +1,628 @@
+from django.http import JsonResponse, HttpResponse
+
+from ..core.views import fetchAllModel, getArtist
+
+def selectProfileOfSingleArtists(request):
+    if request.GET:
+        id = request.GET.get('id')
+        songs = fetchAllModel('songs')
+        artist = fetchAllModel('artist')
+        songModel = songs.filter(artist__id = id)
+        artistModel = artist.get(id = id)
+        artistData = {'url': artistModel.artist_images.all()[0].images.url, 'name': artistModel.name, 'id':artistModel.id}
+
+        allSongs = list(map(lambda i: {'url': i.images.url, 'name': i.artist.name, 'title':i.title, 
+                                'release_year': i.release_year.year, 'label': i.label, 
+                                'genre': i.genre, 'id': i.id, 'minutes': i.minutes, 'format': i.format}, songModel))
+        response = JsonResponse({'albumPhotoCheckedState': [allSongs, artistData]})
+        return response
+    return HttpResponse()
+        
+def profileAllArtists(request):
+    if request.GET:
+        artistModel = fetchAllModel('artist').order_by('name')
+        groupedList = []
+        def uniqueAppender(model):
+            if len(groupedList) > 0:
+                for i in groupedList:
+                    for initials in i.keys():
+                        if model.name[0] == initials:
+                            i[f'{initials}'].append({'name':  model.name, 'id':  model.id, 
+                                'selected': False, 'url': list(map(lambda i: i.images.url, model.artist_images.all()))[0], 
+                                'songs': model.artist_songs.count()})
+                            position=groupedList.index(i)
+                            groupedList.remove(i)
+                            groupedList.insert(position, i)
+                            return i
+            groupedList.append({f'{model.name[0]}': [{'name':  model.name, 
+                'id':  model.id, 'selected': False, 'url': list(map(lambda i: i.images.url, model.artist_images.all()))[0], 
+                'songs': model.artist_songs.count()}]})
+        list(map(lambda model: uniqueAppender(model), artistModel))
+        response = JsonResponse({'albumPhotoCheckedState': groupedList})
+        return response
+    return HttpResponse()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+
+    function makeAjaxRequest(e, type, url, data){
+        e.preventDefault();
+        Array.from(document.querySelectorAll('.items')).map(itm => itm.remove())
+        Array.from(document.querySelectorAll('.sorted-item-wrap')).map(itm => itm.remove())
+        Array.from(document.querySelectorAll('.song-li')).map(itm => itm.remove())
+        var dataToReturn = $.ajax({
+            type,
+            url,
+            data: {csrfmiddlewaretoken: "{{ csrf_token }}", ...data},
+            success: function(json){
+                //console.log(json.albumPhotoCheckedState) 
+                //if the cancel btn is showing, DisplaySelectBtn func changes this to select
+                DisplaySelectBtn()
+                document.querySelector('section.album-photos').classList.remove('no-display-album-photos')
+                if (document.querySelector('#now-playing')){
+                    document.querySelector('#now-playing').classList.remove('display-now-playing')
+                }
+                var bodyElement = document.querySelector('.album-photos > .body')
+                var bodyElement2 = document.querySelector('.album-photos > .body-2')
+                const element = document.querySelector('.album-photos > .head')
+                const currentPage = data.currentPage
+                console.log(currentPage)
+                console.log( json.albumPhotoCheckedState)
+                {% comment %} bodyElement.innerHTML = `
+                    ${
+                        json.albumPhotoCheckedState.forEach((obj, index) => {
+                            `<div data-index=${obj.id} id=${obj.id}
+                            class="items ${obj.selected ? 'is-checked' : null} ${currentPage == 'ARTIST-PAGE' ? 'pointer' : null}
+                                <span class='img-holder'> 
+                                    <img class='img-top' src=${obj.url} />
+                                    {% with checked='{{obj.selected}}' data='{{position}}' dataIndex='{{position}}' inputType='checkbox-1' name='{{position}}' %}
+                                        {% include '../checkbox-input/checkbox-input.html' %}
+                                    {% endwith %}
+                                </span>
+
+                                ${
+                                    currentPage==='FIRST-PAGE' 
+                                    ? `<div class='text-wrap'>
+                                            <div class='text'><span>Title:</span>
+                                                <span>${' ' + obj.title.length > 15 ?  obj.title.slice(0,13) + '...' :  obj.title}</span>
+                                            </div>
+                                            <div class='text'><span>Year:</span><span>${' ' + obj.release_year}</span></div>
+                                            <div class='text'><span>Label:</span><span>${' ' + obj.label}</span></div>
+                                            <div class='text'><span>Genre:</span><span>${' ' + obj.genre}</span></div>
+                                            <div class='text'><span>Artist:</span><span>${' ' + obj.name}</span></div>
+                                    </div>`
+                                    : currentPage==='ARTIST-PAGE'
+                                    ? `<div class='text-wrap'>
+                                            <div class='text'><span>Name:</span>
+                                                <span>${' ' + obj.name.length > 15 ?  obj.name.slice(0,13) + '...' :  obj.name}</span>
+                                            </div>
+                                            <div class='text'><span>Songs:</span><span>${' ' + obj.songs + ' songs'}</span></div>
+                                        </div>`
+                                    : null
+                                }
+                            </div>`
+                        })
+                    }
+                ` {% endcomment %}
+                if (currentPage === 'ARTIST-VIEW-PAGE'){
+                    dataToReturn = json.albumPhotoCheckedState
+                } else {
+                    json.albumPhotoCheckedState.forEach(function(obj, index){
+                        if (currentPage === 'FIRST-PAGE'){
+                            DisplayFirstPage(bodyElement2, bodyElement,currentPage, obj)
+                        }
+                        else{
+                            if (bodyElement){
+                                bodyElement.classList.remove('body')
+                                bodyElement.classList.add('body-2')
+                            }
+                            if (bodyElement2){
+                                bodyElement = bodyElement2 
+                            }
+                            if (currentPage === 'ARTIST-PAGE'){
+                                DisplayArtistPage(element, bodyElement,currentPage, obj)
+                            }
+                            else if (currentPage === 'ARTIST-VIEW-PAGE'){
+                                console.log(obj, 7777777777777)
+                                return (index, bodyElement, obj)
+                            }
+                            else if (currentPage === 'SONGS-PAGE'){
+                                DisplaySongsPage(index, bodyElement, obj)
+                            }
+                            else if (currentPage === 'SORT-PAGE'){
+                                DisplaySortPage(element, bodyElement,currentPage, obj, data)
+                            }
+                        }
+                    })
+                }
+                // element.insertAdjacentElement('afterend', bodyElement)
+            },
+            error: function(xhr, errmsg, err){
+                console.log('completed with error');
+            }
+        });
+        return dataToReturn
+    }
+
+    const CardMaker = (currentPage, obj) => {
+        const {url, title, release_year, label, genre, name, selected, songs} = obj
+        const HTML = `
+                <span class='img-holder'> 
+                    <img class='img-top' src=${url} />
+                    {% with checked='{{selected}}' data='{{position}}' dataIndex='{{position}}' inputType='checkbox-1' name='{{position}}' %}
+                        {% include '../checkbox-input/checkbox-input.html' %}
+                    {% endwith %}
+                </span>
+            ${
+                currentPage==='FIRST-PAGE' 
+                ? `<div class='text-wrap'>
+                        <div class='text'><span>Title:</span>
+                            <span>${' ' + title.length > 15 ?  title.slice(0,13) + '...' :  title}</span>
+                        </div>
+                        <div class='text'><span>Year:</span><span>${' ' + release_year}</span></div>
+                        <div class='text'><span>Label:</span><span>${' ' + label}</span></div>
+                        <div class='text'><span>Genre:</span><span>${' ' + genre}</span></div>
+                        <div class='text'><span>Artist:</span><span>${' ' + name}</span></div>
+                </div>`
+                : currentPage==='ARTIST-PAGE'
+                ? `<div class='text-wrap'>
+                        <div class='text'><span>Name:</span>
+                            <span>${' ' + name.length > 15 ?  name.slice(0,13) + '...' :  name}</span>
+                        </div>
+                        <div class='text'><span>Songs:</span><span>${' ' + songs + ' songs'}</span></div>
+                    </div>`
+                : currentPage==='SORT-PAGE'
+                ? `<div class='text-wrap'>
+                    <div class='text'><span>Title:</span>
+                        <span>${' ' + title.length > 15 ?  title.slice(0,13) + '...' :  title}</span>
+                    </div>
+                    <div class='text'><span>Year:</span><span>${' ' + release_year}</span></div>
+                    <div class='text'><span>Label:</span><span>${' ' + label}</span></div>
+                    <div class='text'><span>Genre:</span><span>${' ' + genre}</span></div>
+                    <div class='text'><span>Artist:</span><span>${' ' + name}</span></div>
+                </div>`
+                {% comment %} : currentPage==='SORT-PAGE'
+                ? `<div class='text-wrap'>
+                        <div class='text'><span>Name:</span>
+                            <span>${' ' + name.length > 15 ?  name.slice(0,13) + '...' :  name}</span>
+                        </div>
+                        <div class='text'><span>Songs:</span><span>${' ' + songs + ' songs'}</span></div>
+                    </div>` {% endcomment %}
+                : null
+        }`
+        return HTML
+    }
+
+    const DisplayFirstPage = (bodyElement2, bodyElement,currentPage, obj) => {
+        if (bodyElement2){
+            bodyElement2.classList.add('body')
+            bodyElement2.classList.remove('body-2')
+            bodyElement= bodyElement2
+        }
+        newItem = document.querySelector('.items.newlyAddedItem')
+        if (newItem){newItem.classList.remove('newlyAddedItem')}
+        bodyItemElement = document.createElement('div')
+        bodyItemElement.className = 'items newlyAddedItem'
+        bodyItemElement.innerHTML = CardMaker(currentPage, obj)
+
+        //the if condition is meant to position from earliest to latest, placing bodyItemElement beside d msst recently creaated one
+        //cos just using sorted with arg 'afterBegin' will position from latest to earliest
+        if (newItem){newItem.insertAdjacentElement('afterEnd', bodyItemElement)}
+        else{bodyElement.insertAdjacentElement('afterBegin', bodyItemElement)}
+    }
+
+    async function HandleArtistClick(e){
+        const id = e.target.closest('.items').id
+        {% comment %} setSingleArtist(id) {% endcomment %}
+        const {albumPhotoCheckedState} = await makeAjaxRequest(e, "GET", "{% url 'artist_:selectProfileOfSingleArtists' %}", 
+                                    { 
+                                        csrfmiddlewaretoken: "{{ csrf_token }}", 
+                                        currentPage: 'ARTIST-VIEW-PAGE',
+                                        id
+                                    })
+        console.log(albumPhotoCheckedState, 777)
+        
+        document.querySelector('section.album-photos').classList.add('no-display-album-photos')
+        const ArtistView = document.querySelector('#artist-view')
+        const Block1 = ArtistView.querySelector('.block-1')
+        const Block2 = ArtistView.querySelector('.block-2')
+        const Block3 = ArtistView.querySelector('.block-3')
+        const Block4 = ArtistView.querySelector('.block-4')
+        ArtistView.classList.add('display-artist-view')
+
+        const box1 = ArtistView.querySelectorAll('.block-2 > .box-2 > .place-1 > .place-1-box')
+        const box2 = ArtistView.querySelector('.block-3 > .place-1')
+        if (box1){Array.from(box1).map(itm => itm.remove())}
+        if (box2){box2.innerHTML = '<div></div>'}
+        Block1.querySelector('img').setAttribute('src', `${albumPhotoCheckedState[1].url}`)
+        Block1.querySelector('.text-1').textContent = `${albumPhotoCheckedState[0][0].title}`
+        Block1.querySelector('.text-2').textContent = `${albumPhotoCheckedState[1].name}`
+        Block1.querySelector('.text-3').textContent = `${albumPhotoCheckedState[0][0].minutes}`
+        Block2.querySelector('.place-1 > img').setAttribute('src', `${albumPhotoCheckedState[0][0].url}`)
+        Block2.querySelector('.place-1 > span').textContent = `${albumPhotoCheckedState[1].name}`
+        Block2.querySelector('.place-2 > img').setAttribute('src', `${albumPhotoCheckedState[0][0].url}`)
+        Block2.querySelector('.place-2 > span').textContent = `${albumPhotoCheckedState[1].name}`
+        ArtistView.querySelector('.block-2 > .box-2 > .place-1 > h2').textContent = `${albumPhotoCheckedState[1].name} ${albumPhotoCheckedState[0][0].title}`
+        ArtistView.querySelector('.block-2 > .box-2 > .place-1').insertAdjacentHTML('beforeEnd', `
+        ${albumPhotoCheckedState[0].map(itm => `
+            <div class='place-1-box'>
+                <div class='place1'>
+                    <img class='img-top' src=${itm.url} />
+                    <div class='txt'>
+                        <span>${albumPhotoCheckedState[1].name}</span>
+                        <span>${albumPhotoCheckedState[1].name} - ${itm.title}</span>
+                    </div>
+                </div>
+                <button class="circle-type custom-button"><span>&#10140;</span></button>   
+            </div>`)}
+        `)
+        ArtistView.querySelector('.block-3 > .place-1').insertAdjacentHTML('beforeEnd', `
+        ${[1,2,3,4,5,6,7,8,9,10].map(itm => `
+            <div class='box'>
+                <img class='img-top' src=${albumPhotoCheckedState[1].url} />
+                <div class='txt'>
+                    <span>A love Song</span>
+                    <span>{${albumPhotoCheckedState[1].name} - ${albumPhotoCheckedState[0][0].title} ...</span>
+                </div>
+            </div>`)}
+        `)
+        Block4.querySelector('.table > h1').textContent = `About - ${albumPhotoCheckedState[0][0].title}`
+    }
+
+    const DisplayArtistPage = (element, bodyElement,currentPage, obj) => {
+        newSortedWrap = document.querySelector('.sorted-item-wrap.newlyAddedSortedWrap')
+        if (newSortedWrap){newSortedWrap.classList.remove('newlyAddedSortedWrap')}
+        const sortedItemWrap = document.createElement('div')
+        sortedItemWrap.className = 'sorted-item-wrap newlyAddedSortedWrap'
+        const sortedItemHead= document.createElement('span')
+        sortedItemHead.className = 'sort-head'
+        sortedItemHead.innerHTML = `${Object.keys(obj)[0]}`
+        sortedItemWrap.insertAdjacentElement('afterBegin', sortedItemHead)
+        const sorted= document.createElement('span')
+        sorted.className = 'sorted-2'
+
+        obj[`${Object.keys(obj)[0]}`].forEach(function(obj, index){
+            newItem = sorted.querySelector('.items.newlyAddedItem')
+            if (newItem){ newItem.classList.remove('newlyAddedItem')}
+            bodyItemElement = document.createElement('div')
+            {% comment %} bodyItemElement.id =  {% endcomment %}
+            bodyItemElement.className = 'items newlyAddedItem'
+            bodyItemElement.id = obj.id
+            bodyItemElement.innerHTML = CardMaker(currentPage, obj)
+            bodyItemElement.addEventListener('click', e => HandleArtistClick(e, obj.id))
+            
+            //the if condition is meant to position from earliest to latest, placing bodyItemElement beside d msst recently creaated one
+            //cos just using sorted with arg 'afterBegin' will position from latest to earliest
+            if (newItem){newItem.insertAdjacentElement('afterEnd', bodyItemElement)}
+            else{sorted.insertAdjacentElement('afterBegin', bodyItemElement)}
+        })
+
+        sortedItemWrap.insertAdjacentElement('beforeEnd', sorted)
+        //the if condition is meant to position from earliest to latest, placing bodyItemElement beside d msst recently creaated one
+        //cos just using bodyElement with arg 'afterBegin' will position from latest to earliest
+        if (newSortedWrap){
+            newSortedWrap.insertAdjacentElement('afterEnd', sortedItemWrap)
+        }
+        else{
+            bodyElement.insertAdjacentElement('afterBegin', sortedItemWrap)
+        }
+        {% comment %} element.insertAdjacentElement('afterEnd', bodyElement) {% endcomment %}
+
+    }
+
+    const DisplaySortPage = (element, bodyElement,currentPage, obj, data) => {
+        newSortedWrap = document.querySelector('.sorted-item-wrap.newlyAddedSortedWrap')
+        if (newSortedWrap){newSortedWrap.classList.remove('newlyAddedSortedWrap')}
+        const sortedItemWrap = document.createElement('div')
+        sortedItemWrap.className = 'sorted-item-wrap newlyAddedSortedWrap'
+        const sortedItemHead= document.createElement('span')
+        sortedItemHead.className = 'sort-head'
+        sortedItemHead.innerHTML = `${Object.keys(obj)[0]}${data.value==="Label" ? ' Record' : ''}`
+        sortedItemWrap.insertAdjacentElement('afterBegin', sortedItemHead)
+        const sorted= document.createElement('span')
+        sorted.className = 'sorted-2'
+
+        obj[`${Object.keys(obj)[0]}`].forEach(function(obj, index){
+            newItem = sorted.querySelector('.items.newlyAddedItem')
+            if (newItem){ newItem.classList.remove('newlyAddedItem')}
+            bodyItemElement = document.createElement('div')
+            bodyItemElement.className = 'items newlyAddedItem'
+            bodyItemElement.innerHTML = CardMaker(currentPage, obj)
+            
+            //the if condition is meant to position from earliest to latest, placing bodyItemElement beside d msst recently creaated one
+            //cos just using sorted with arg 'afterBegin' will position from latest to earliest
+            if (newItem){newItem.insertAdjacentElement('afterEnd', bodyItemElement)}
+            else{sorted.insertAdjacentElement('afterBegin', bodyItemElement)}
+        })
+
+        sortedItemWrap.insertAdjacentElement('beforeEnd', sorted)
+        //the if condition is meant to position from earliest to latest, placing bodyItemElement beside d msst recently creaated one
+        //cos just using bodyElement with arg 'afterBegin' will position from latest to earliest
+        if (newSortedWrap){
+            newSortedWrap.insertAdjacentElement('afterEnd', sortedItemWrap)
+        }
+        else{
+            bodyElement.insertAdjacentElement('afterBegin', sortedItemWrap)
+        }
+        {% comment %} element.insertAdjacentElement('afterEnd', bodyElement) {% endcomment %}
+
+    }
+
+    let currentlyPlayingSong = null
+    const setCurrentlyPlayingSong = (obj) => {
+        currentlyPlayingSong = obj
+        return obj
+    }
+
+    const HandleSongclick = (e, obj) => {
+        var songLi = null
+        try{
+            songLi = e.target.closest('.song-li-wrap')
+        } catch{
+            songLi = e
+        }
+        //TO ADJUST THE HEIGHT AND MAKE WAY FOR BOTTOM PALLETE TO SLIDE UP
+        Array.from(document.querySelectorAll('.song-li > .song-li-wrap')).map(itm =>  itm !== songLi
+            ? itm.classList.remove('song-li-change-bg') : null)
+        songLi.classList.toggle('song-li-change-bg')
+        const mainPlace_2 = songLi.firstElementChild.firstElementChild.nextElementSibling
+        const otherPlace_2 = Array.from(document.querySelectorAll('.song-li-wrap > .item-1 > .place-2')).map(itm =>  
+            itm !== mainPlace_2 ? itm.classList.remove('display-place-2') : null)
+        const otherFirstDIV = Array.from(document.querySelectorAll('.song-li-wrap .item-1 > .place-1 > .hide-div1'))
+        const otherSecondDIV = Array.from(document.querySelectorAll('.song-li-wrap .item-1 > .place-1 > .hide-div2'))
+        const mainFirstDIV = songLi.firstElementChild.firstElementChild.firstElementChild.nextElementSibling
+        const mainSecondDIV = mainFirstDIV.nextElementSibling
+        if (otherSecondDIV.length !== 0){
+            otherSecondDIV.map(itm => itm.setAttribute('display', 'block'))
+        }
+        mainFirstDIV.classList.toggle('hide-div1')
+        mainSecondDIV.classList.toggle('hide-div2')
+        mainPlace_2.classList.toggle('display-place-2')
+        songLi.querySelector('.item-1').classList.toggle('re-spacing')
+        const bottomPallete = document.querySelector('.homepage > .bottom-pallete')
+        if (document.querySelector('.song-li-change-bg')){
+            document.querySelector('#side-bar').classList.add('reduce-height-for-btm-pallete')
+            document.querySelector('.homepage > .homepage-body').classList.add('reduce-height-for-btm-pallete')
+            
+            bottomPallete.classList.add('display-bottom-pallete')
+            const {id, name, format, title, label, url, minutes, release_year} = obj
+            setCurrentlyPlayingSong(obj)
+            bottomPallete.querySelector('.first-line > .box-2 > span:nth-child(3)').textContent = minutes
+            bottomPallete.querySelector('img').setAttribute('src', url)
+            bottomPallete.querySelector('div > .song').textContent = name + ' || ' + label + '(' + format + ')'
+            bottomPallete.querySelector('div > .name').textContent = title
+            bottomPallete.querySelector('.second-line > .box-2 > span:nth-child(3)').textContent = minutes
+        } else {
+            setCurrentlyPlayingSong(null)
+            document.querySelector('#side-bar').classList.remove('reduce-height-for-btm-pallete')
+            document.querySelector('.homepage > .homepage-body').classList.remove('reduce-height-for-btm-pallete')
+            bottomPallete.classList.remove('display-bottom-pallete')
+        }
+    } 
+
+    const DisplaySongsPage = (index, bodyElement, obj) => {
+        newItem = document.querySelector('.song-li.newlyAddedItem')
+        if (newItem){newItem.classList.remove('newlyAddedItem')}
+        bodyItemElement = document.createElement('span')
+        bodyItemElement.className = 'song-li newlyAddedItem'
+        bodyItemElement.addEventListener('click', e => HandleSongclick(e, obj))
+        bodyItemElement.innerHTML = `
+                <div class='song-li-wrap'
+                    id=${index % 2 === 0 ? 'site-black-color' : 'normal-black-color'}>
+                    <div class='item-1'>
+                        <div class='place-1'>
+                            {% with checked='${obj.selected}' data='{{position}}' dataIndex='{{position}}' inputType='checkbox-2' name='{{position}}' %}
+                                {% include '../checkbox-input/checkbox-input.html' %}
+                            {% endwith %}
+                            <div class="hide-div1">${obj.title.slice(0,15) + '...'}</div>
+                            <div>
+                                <span>${obj.title.length > 15 ? obj.title.slice(0,15) + '...' : obj.title}</span>
+                                <span class='double-bar'>||</span>
+                                <span>${obj.label.length > 15 ? obj.label.slice(0,15) + '...' : obj.label} Record</span>
+                            </div>
+                        </div>
+                        <div class='place-2'><span><CaretNextWhite /></span><span class="html-icon">&#10011;</span></div>
+                    </div>
+                    <span class='item-2'>${obj.name.length > 15 ? obj.name.slice(0,15) + '...' : obj.name}</span>
+                    <span class='item-3'>${obj.release_year}</span>
+                    <span class='item-4'>${obj.minutes}</span>
+                </div>
+            `   
+        
+
+        //the if condition is meant to position from earliest to latest, placing bodyItemElement beside d msst recently creaated one
+        //cos just using sorted with arg 'afterBegin' will position from latest to earliest
+        if (newItem){newItem.insertAdjacentElement('afterEnd', bodyItemElement)}
+        else{bodyElement.insertAdjacentElement('afterBegin', bodyItemElement)}
+        //this condition is meant to ensure once a song is clicked it always appear clicked onclick of songs at sidebar 
+        if (currentlyPlayingSong){
+            if (obj.id === currentlyPlayingSong.id){
+                HandleSongclick((bodyItemElement).querySelector('.song-li-wrap'), obj)
+            }
+        }
+    } 
+    
+    const HandleMousever = (e, selector) => {
+        //console.log(e.currentTarget.tagName)
+        //console.log(e.target.tagName)
+        const {className, classList, name} = e.target
+        const Card=document.querySelector('.new-playlist-card')
+        const LeftSideIcon = document.querySelector('.left-side > .blocks > .icon')
+        const RightSideSlideBox = document.querySelector('.right-side > .blocks > .slide-box')
+        const RightSideFirstList= document.querySelector('.right-side > .blocks > .list:first-child')
+
+        document.querySelector('.new-playlist-card').classList.remove('show-new-playlist-card')
+        document.querySelector('#artist-view').classList.remove('display-artist-view')
+        RemoveHoverColor()
+        try{
+            var num = className.split(' ')[1].split('-')[1]
+            const SlideBoxListItem = document.querySelector(`.slide-box > .list-${num}`)
+            const RightSideListItem = document.querySelector(`.right-side > .blocks > .list-${num}`)
+            const LeftSideIconItem = document.querySelector(`.left-side > .blocks > .icon-${num}`)
+            if (classList.contains('list-fill')){
+                SlideBoxListItem.setAttribute('style', 'border-radius: 20px 0 0 20px;background-color: var(--normalblack);')
+            }
+            else{
+                LeftSideIconItem.setAttribute('style', 'border-radius: 20px 0 0 20px; background-color: var(--normalblack);')
+                RightSideListItem.setAttribute('style', 'background-color: var(--normalblack);')
+            }
+        }
+        catch (error){}
+        if (!classList.contains('list-1') && !classList.contains('icon-1')){
+            document.querySelector('#container').classList.add('container-change-color')
+           if ((document.querySelector('#side-bar > .content > .box >\
+               .right-side > .blocks > .slide-box.slide-open'))  && (!classList.contains('list-fill'))){
+                   LeftSideIcon.classList.toggle('add-px-below')
+                   RightSideFirstList.classList.toggle('add-px-below')
+                   RightSideSlideBox.classList.toggle('slide-open')
+               }
+        } 
+        else {
+           LeftSideIcon.classList.toggle('add-px-below')
+           RightSideFirstList.classList.toggle('add-px-below')
+           e.target.innerHtml = '<span>Collection &#10097</span>'
+           RightSideSlideBox.classList.toggle('slide-open')
+           document.querySelector('#container').classList.remove('container-change-color')
+        }
+        
+        //if (selector){
+        //    if (classList.contains('list-1') || classList.contains('icon-1')){
+        //        //setCurrentPage('FIRST-PAGE')
+        //    }
+        //    if (classList.contains('list-2') || classList.contains('icon-2')){ 
+        //        //setCurrentPage('ARTIST-PAGE')
+        //    }
+        //    if (classList.contains('list-3') || classList.contains('icon-3')){
+        //        //setCurrentPage('SONGS-PAGE')
+        //    }
+        //    setAlbumPhotoCheckedState(selector)
+        //    document.querySelector('#now-playing').classList.remove('display-now-playing')
+        //    document.querySelector('template.album-photos').classList.remove('no-display-album-photos')
+        //}
+
+         if (classList.contains('list-1') || classList.contains('icon-1')){
+            makeAjaxRequest(e, "GET", "{% url 'songs_:selectAllSongAlbumPhotos' %}", { csrfmiddlewaretoken: "{{ csrf_token }}", currentPage: 'FIRST-PAGE'})
+         }
+         if (classList.contains('list-2') || classList.contains('icon-2')){
+            makeAjaxRequest(e, "GET", "{% url 'artist_:profileAllArtists' %}", { csrfmiddlewaretoken: "{{ csrf_token }}", currentPage: 'ARTIST-PAGE'})
+         }
+         if (classList.contains('list-3') || classList.contains('icon-3')){
+            makeAjaxRequest(e, "GET", "{% url 'songs_:selectAllSong' %}", { csrfmiddlewaretoken: "{{ csrf_token }}", currentPage: 'SONGS-PAGE'})
+         }
+         else if (classList.contains('list-4') || classList.contains('icon-4')){
+            NowPlaying(currentlyPlayingSong)
+         }
+         else if (classList.contains('list-5') || classList.contains('icon-5')){
+            Card.classList.toggle('show-new-playlist-card')
+            {% comment %} Card.style.top = `${e.target.offsetTop}px` {% endcomment %}
+         }
+    }
+
+    const NowPlaying = (obj) => {
+        document.querySelector('section.album-photos').classList.add('no-display-album-photos')
+        if (document.querySelector('#now-playing')){
+            document.querySelector('#now-playing').remove()
+        }
+
+        const Content = document.querySelector('.homepage-body > .content')
+        console.log(obj)
+        now_playing = document.createElement('section')
+        now_playing.id = 'now-playing'
+        now_playing.className = 'display-now-playing'
+        now_playing.innerHTML = `
+            ${
+            obj
+            ? `<div class='now-playing-wrap'>
+                <span class='img-holder'> 
+                    <img src=${obj.url} />
+                    <div class='img-txt'>
+                        <span class='song'>${obj.title + ' || ' + obj.label + '('+obj.format+')'}</span>
+                        <span class='name'>${obj.name}</span>
+                    </div>
+                    <div class='img-icon'>
+                        <span class='html-icon'>&#10022;</span>
+                        <span class='html-icon'>&#10138;</span>
+                    </div>
+                </span>
+                <span data-id=${obj.id} 
+                        data-obj=${obj}
+                        class='song-li'>
+                        <div class='song-li-wrap'>
+                            <div class='item-1'>
+                                <div class='place-1'>
+                                    <div class="hide-div1">${obj.title.slice(0,15) + '...'}</div>
+                                    <div>
+                                        <span>${obj.title.length > 15 ? obj.title.slice(0,15) + '...' : obj.title}</span>
+                                        <span class='double-bar'>||</span>
+                                        <span>${obj.label.length > 15 ? obj.label.slice(0,15) + '...' : obj.label} Record</span>
+                                    </div>
+                                </div>
+                                <div class='place-2'><span><CaretNextWhite /></span><span class="html-icon">&#10011;</span></div>
+                            </div>
+                            <span class='item-2'>${obj.name.length > 15 ? obj.name.slice(0,15) + '...' : obj.name}</span>
+                            <span class='item-3'>${obj.release_year}</span>
+                            <span class='item-4'>${obj.minutes}</span>
+                        </div>
+                </span>
+                </div>`
+            : `<div class='now-playing-wrap'>
+                  <span class='img-holder2'>
+                      <img src='../../media/images/song-pic/song9.PNG' />
+                      <div class='img-txt'>
+                          <span class='name'>You Have Not Chosen A Song</span>
+                      </div>
+                  </span>
+              </div>`
+            }
+        `
+        Content.insertAdjacentElement('beforeEnd', now_playing)
+    }
+    
+    const HideSideBar = () => {
+        document.querySelector('#side-bar').classList.toggle('no-scroll-bar')
+        document.querySelector('#side-bar > .content > form').classList.toggle('reduce-form')
+        document.querySelector('#side-bar > .content > form > .search-icon').classList.toggle('reposition-icon')
+        document.querySelector('#side-bar').classList.toggle('reduce-width')
+        document.querySelector('#side-bar > .content > .box > .right-side').classList.toggle('hide-content')
+        document.querySelector('.homepage > .homepage-body').classList.toggle('increase-body')
+    } 
+
+    const RemoveHoverColor = () => {
+        const AllIcons= Array.from(document.querySelectorAll('.left-side > .blocks > .icon'))
+        const AllLists= Array.from(document.querySelectorAll('.right-side > .blocks > .list'))
+        const AllSlideBoxLists= Array.from(document.querySelectorAll('.right-side > .blocks > .slide-box > .list'))
+        AllIcons.map(itm => itm.removeAttribute('style', 'border-radius:20px 0 0 20px; background-color: var(--normalblack);'))
+        AllLists.map(itm => itm.removeAttribute('style', 'background-color: var(--normalblack);'))
+        AllSlideBoxLists.map(itm => itm.removeAttribute('style', 'background-color: var(--normalblack);'))
+    }
+    
+</script>
+
+
+
+"""

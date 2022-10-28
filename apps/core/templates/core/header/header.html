@@ -1,0 +1,32 @@
+<section id="header">
+    <div class="content">
+        <div class="box-1">
+            <div class='site-icon'>
+                <span>BRIGHT</span><span>Music</span>
+            </div>
+            {% with HeaderType='true' %}
+                {% include '../form-group/form-group.html' %}
+            {% endwith %}
+        </div>
+        <div class="box-2">
+            <div class="list-place">
+                <ul>
+                    <li>home</li>
+                    <li>Podcast</li>
+                    <li>Download&nbsp;App</li>
+                </ul>
+                <span class="sign-up"><i class="fa fa-user" ></i></span>
+            </div>
+            <span class="menubar html-icon">&#9776;</span>
+            <span class="menutimes html-icon">&#10005;</span>
+        </div>
+    </div>
+</section>
+<script>
+    document.querySelector('.sign-up').addEventListener('click', e => HandleAccount(e))
+    {% comment %} document.querySelector('.menutimes.html-icon').addEventListener('click', e => HandleClick(e)) {% endcomment %}
+    
+    const HandleAccount = (e) => {
+        document.querySelector('section#sign-up').setAttribute('style', 'display: flex;')
+    }
+</script>

@@ -1,0 +1,12 @@
+{% comment %} {% load static %}
+{% block styleSheets %}{% static 'styles/custom-button.css' %}{% endblock %} {% endcomment %}
+
+
+<button class="{% if buttonType == 'shopNow' %} shop-now-btn
+            {% elif buttonType == 'FlatButton' %} flat-button 
+            {% elif buttonType == 'circleType' %} circle-type
+            {% elif buttonType == 'circleType2' %} circle-type-2
+            {% elif buttonType == 'borderType' %} border-type
+            {% endif %} custom-button">
+    {{buttonText}}
+</button>

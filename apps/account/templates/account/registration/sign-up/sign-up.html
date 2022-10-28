@@ -1,0 +1,42 @@
+<section id="sign-up">
+<div class="sign-up-content">
+    <div class="content">
+        <div class="inner-block1">
+            <img class='img-top' src='media/images/fashion/revolt-164_6wVEHfI-unsplash.jpg' />
+        </div>
+
+        <div class="inner-block2">
+            <div class='box-1'>
+                <span>SIGN UP</span>
+                <span>SIG UP ON OUR PLATFORM TO GET THE LATEST NEWS ON YOUR FAVOURITE ARTIST, AND ACCESS TO MILLIONS OF MUSIC</span>
+            </div>
+            <div class='box-2'>
+                <form class="">
+                    <div class="top">
+                    {% with inputtype='SmallInputType' shrinkinputtype='true' name="firstname" type='text' label="First Name*" required=true %}
+                        {% include '../form-input/form-input.html' %}
+                    {% endwith %}
+                    {% with inputtype='SmallInputType' shrinkinputtype='true' name="lastname" type='text' label="Last Name*" required=true %}
+                        {% include '../form-input/form-input.html' %}
+                    {% endwith %}
+                    {% with inputtype='SmallInputType' shrinkinputtype='true' name="email" type='text' label="Email*" required=true %}
+                        {% include '../form-input/form-input.html' %}
+                    {% endwith %}
+                    </div> 
+                    {% with buttonType="shopNow" buttonText="Sign Up" %}
+                        {% include '../custom-button/custom-button.html' %}
+                    {% endwith %}
+                </form>
+            </div>
+        </div>    
+        <span class='cancel' onClick={CancelSlideModal()}>&#10005;</span>
+        
+    </div>
+</div>
+</section>
+<script>
+     function CancelSlideModal(){
+        console.log(this)
+     document.querySelector('section#sign-up').setAttribute('style', 'display:none')
+    }
+</script>

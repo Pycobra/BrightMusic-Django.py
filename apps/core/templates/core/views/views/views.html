@@ -1,0 +1,107 @@
+{% comment %} {% extends 'core/base.html' %}
+{% load static %}
+{% block styleSheets %}{% static 'styles/views.css' %}{% endblock %} {% endcomment %}
+
+
+
+
+<section class='album-photos'>
+    <div class='head'>
+        <h1>Albums</h1>
+        <div class='place-1'>
+            <div class='box'>
+                <span>Sort by : </span>
+                {% with selecttype='MidInputType2' type="text" data='[Genre,Artist,ReleaseYear,Label]' name="sortSearch" data_place="product type" %}
+                    {% include '../../form-select/form-select.html' %}
+                {% endwith %}
+            </div>
+            <div class='icon-place'>
+                <div id='select'><span class="html-icon">&#10003;</span><span>Select</span></div>
+                <div id='cancel' class="dont-display"><span class="html-icon">&#10005;</span><span>Cancel</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="body">
+            {% if currentPage == "FIRST-PAGE" %}
+                {% for obj in albumPhotoCheckedState %}
+                {% comment %} {% with currentPage='{{currentPage}}' position='{{obj[0]}}' obj='{{obj[1]}}' %} {% endcomment %}
+                    {% include '../../items/items.html' %}
+                {% endfor %}
+            {% elif currentPage == 'SONGS-PAGE' %}
+                {% for obj in albumPhotoCheckedState %}
+                {% with currentPage='{{currentPage}}' albumPhotoCheckedState='{{albumPhotoCheckedState}}' index='{{idx}}' obj='{{obj}}' %}
+                    {% include '../song-list/song-list.html' %}
+                {% endwith %}
+                {% endfor %}
+            {% elif currentPage == 'SORT-PAGE' or currentPage == 'ARTIST-PAGE' %}
+                {% for sort_array in albumPhotoCheckedState %}
+                    var cnt = 0
+                    <div class='sorted-item-wrap'>
+                        <span class='sort-head'>
+                            {% if currentPage == 'ARTIST-PAGE' %}
+                                {% comment %} {{sort_array[1][0].name}} {% endcomment %}
+                            {% elif currentPage == 'Genre' %}
+                                {% comment %} {{sort_array[1][0].genre}} {% endcomment %}
+                            {% elif currentPage == 'Artist' %}
+                                {% comment %} {{sort_array[1][0].artist}} {% endcomment %}
+                            {% elif currentPage == 'Release Year' %}
+                                {% comment %} {{sort_array[1][0].release_year}} {% endcomment %}
+                            {% elif currentPage == 'Label' %}
+                                {% comment %} {{sort_array[1][0].label + ' Record'}} {% endcomment %}
+                            {% endif %}
+                        </span>
+                        <div class="{% if sort_array == '5' %} 
+                                        sorted 
+                                    {% elif sort_array < 5 or sort_array > 5 %} 
+                                        sorted-2 
+                                    {% endif %}">
+                                {% for obj in sort_array %}
+                                    {% comment %} cnt += 1 {% endcomment %}
+                                    {% with currentPage='{{currentPage}}' position='{{cnt}}' obj='{{obj}}' %}
+                                        {% include '../items/items.html' %}
+                                    {% endwith %}
+                                {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+    </div>
+
+</section>
+<script>
+    const Select = document.querySelector('.icon-place > #select')
+    Select.addEventListener('click', e => DisplayCheckButton(e))
+    const cancel = document.querySelector('.icon-place > #cancel')
+    cancel.addEventListener('click', e => DisplayCheckButton(e))
+
+    function DisplaySelectBtn(){
+        document.querySelector('.icon-place > #select').classList.remove('dont-display')
+        document.querySelector('.icon-place > #cancel').classList.add('dont-display')
+    }
+    function FlipSelectAndCancelBtn(){
+        document.querySelector('.icon-place > #select').classList.toggle('dont-display')
+        document.querySelector('.icon-place > #cancel').classList.toggle('dont-display')
+    }
+
+    const DisplayCheckButton = (e) => {
+        console.log(e.target)
+        const id= e.target.closest('div').id
+        FlipSelectAndCancelBtn()
+        if (id === 'select'){
+            Array.from(document.querySelectorAll('.checkbox-1')).map(itm => itm.classList.add('display-checked'))
+            Array.from(document.querySelectorAll('.checkbox-2')).map(itm => itm.classList.add('display-checked'))
+        } 
+        else if (id === 'cancel'){
+            Array.from(document.querySelectorAll('template.album-photos > .body > .items'))
+                .map(itm => itm.classList.remove('is-checked'))
+            Array.from(document.querySelectorAll('.checkbox-1')).map(itm => {
+                itm.classList.remove('display-checked')
+                return itm.firstElementChild.checked ? itm.firstElementChild.checked = false : null
+            })
+            Array.from(document.querySelectorAll('.checkbox-2')).map(itm => {
+                itm.classList.remove('display-checked')
+                return itm.firstElementChild.checked ? itm.firstElementChild.checked = false : null
+            })
+        }
+    }
+</script>

@@ -1,0 +1,28 @@
+{% load static %}
+{% block styleSheets %}
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'styles/form-input.css' %}"> {% endcomment %}
+{% endblock %}
+
+
+{% if shrinkinputtype == 'true' %}
+    <div class="group">
+        <input type="{{type}}" placeholder="{{placeholder}}" 
+                name="{{name}}" required="{{required}}" 
+            class="group-form-input
+                {% if inputtype == 'SmallInputType' %} small-input
+                {% elif inputtype == 'SmallInputType12' %} small-input2
+                {% endif %}
+                {% if issearch == 'true' %} issearch {% endif %}">
+        </input>
+        {% if label %}
+        <label class="{% if otherProps.value.length == 'shrink' %} shrink 
+            {% elif issearch == 'true' %} issearch {% endif %}" >{{label}}</label>
+        {% endif %}
+    </div>
+{% else %}
+    <input type="{{type}}" placeholder="{{placeholder}}" 
+            name="{{name}}" required="{{required}}"
+            class="input-fields {% if inputtype == 'SearchInputType' %} search-input {% endif %}">
+    </input>
+{% endif %}
+

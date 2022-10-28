@@ -1,0 +1,152 @@
+{% load static %}
+{% block styleSheets %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/artist-view.css' %}">
+{% endblock %}
+
+
+
+
+
+
+
+<section id='artist-view'>
+    <div class='artist-view-body'> 
+        <div class='block-1'>
+            <span class='box-1 img-holder'> 
+                <img class='img-top' src='../../../Media/song-pic/${data.url[0].url}.PNG' />
+            </span>
+            <div class='box-2'>
+                <div class='place-1'>
+                    <span class='text-1'>{{data.songs.0.title}}</span>
+                    <span class='text-2'>{{data.name}} {{' ' }} {{data.songs.0.title}}</span>
+                    <span class='text-3'>{{data.songs.0.minutes}} {{' '}} {{data.songs.0.release_year}} {{data.songs.0.label}} </span>
+                    <div class='btns'>
+                        {% comment %} {% with buttonType="borderType" buttonText="<span class="html-icon">&#9997;</span><span class='btn-txt btn-txt1'>Play&nbsp;Now</span>" %}
+                            {% include '../../custom-button/custom-button.html' %}
+                        {% endwith %}
+                        {% with buttonType="borderType" %}
+                            {% include '../../custom-button/custom-button.html' %}
+                        {% endwith %}
+                        {% with buttonType="circleType" %}
+                            {% include '../../custom-button/custom-button.html' %}
+                        {% endwith %}  {% endcomment %}
+                        <button class="border-type custom-button" style="background-color:red;border:none;" buttonType="borderType">
+                            <span>&#10140;</span>
+                            <span onMouseLeave={handleMouseLeave(this)} onMouseOver={handleMousever(this)} class='btn-txt btn-txt1'>Play&nbsp;Now</span>
+                        </button>
+                        <button class="border-type custom-button" buttonType="borderType"><span style="color:var(--darkgrey);z-Index:1;" class='html-icon'>&#9835;</span>
+                        <span onMouseLeave={handleMouseLeave(this)} 
+                            onMouseOver={handleMousever(this)} style="color:var(--darkgrey);zIndex:1;"
+                            class='btn-txt btn-txt2'>Set&nbsp;Free&nbsp;Hellotunes</span></button>
+                        <button class="circle-type custom-button" buttonType="circleType"><span class='html-icon'>&#9997;</span></button>
+                    </div>
+                </div>
+                <div class='place-2'>
+                    <button class="circle-type custom-button"><span>&#10140;</span></button>
+                    <button class="circle-type custom-button"><span>&#10030;</span></button>
+                </div>
+            </div>
+        </div>
+        <div class='block-2'>
+            <div class='box-1'>
+                <h2>Artist</h2>
+                <div class='place-1'>
+                    <img class='img-top' src={{data.url.0.url}} />
+                    <span>{{data.name}}</span>
+                </div>
+                <div class='place-2'>
+                    <img class='img-top' src={{data.url.0.url}} />
+                    <span>{{data.name}}</span>
+                </div>
+            </div>
+            <div class='box-2'>
+                <div class='place-1'>   
+                    <h2>{{data.name}}{{' '}} {{data.songs.0.title}}</h2>
+                        {% comment %} {% for itm in data.songs %}
+                        <div class='place-1-box'>
+                            <div class='place1'>
+                                <img class='img-top' src={{itm.url}} />
+                                <div class='txt'>
+                                    <span>{{data.name}}</span>
+                                    <span>{{data.name}} {{' - '}}  {{itm.title}}</span>
+                                </div>
+                            </div>
+                            {% with buttonType="circleType" %}
+                                {% include '../../custom-button/custom-button.html' %}
+                            {% endwith %}   
+                        </div>
+                        {% endfor %} {% endcomment %}
+                </div>
+            </div>
+        </div>
+        <div class='block-3'>
+            <h2>Other {{data.name}} Songs</h2>
+            <div class='place-1'>
+                <div class='box'>
+                    <img class='img-top' src={{url}} />
+                    <div class='txt'>
+                        <span>A love Song</span>
+                        <span>{{data.name}} {{' - '}} {{data.songs.0.title}} ...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='block-4'>
+            <div class="table">
+                <h1>About - {{data.songs.0.title}}</h1>
+                <div class="tbody">
+                    
+                    <div class='cols'><span>Album/ Movie</span><span>Kenny rogers a love song collection</span></div>
+                    <div class='cols'><span>Singers</span><span>Kenny Rogers</span></div>
+                    <div class='cols'><span>Actors</span><span>Kenny Rogers</span></div>
+                    <div class='cols'><span>Music Composer</span><span>Jimmy Funk</span></div>
+                    <div class='cols'><span>Music Director</span><span>Kenny Rogers</span></div>
+                    <div class='cols'><span>Lyricist</span><span>Kenny Rogers</span></div>
+                    <div class='cols'><span>Other</span><span>Kenny Rogers</span></div>
+                    <div class='cols'><span>Language</span><span>English</span></div>
+                    <div class='cols'><span>Music Company</span><span>1999 Koch Record</span></div>
+                    <div class='cols'><span>Duration</span><span>03:44</span></div>
+                </div>
+            </div>
+        </div>
+  </div>
+</section>
+
+<script>
+    const handleMouseLeave = (e) => {
+        const card = document.querySelector('span.artist-view-card')
+        return card ? card.remove() : null
+    }    
+    const handleMousever = (e) => {
+        console.log(e.className)
+        const toolTipElement = document.createElement('span')
+        // const toolTipElementInside = document.createElement('span')
+        // const toolTipElementCaret = document.createElement('span')
+        
+        toolTipElement.className = 'artist-view-card'
+        toolTipElement.textContent = `${
+            e.classList.contains('btn-txt1') 
+            ? 'click to play this song'
+            : e.classList.contains('btn-txt2')  
+            ? 'click to set this song as your callertunes'
+            : null
+        }`
+        // toolTipElementInside.className = 'card-inside'
+        // toolTipElementCaret.className = "icon"
+        
+        const hostElPosLeft=e.offsetLeft
+        const hostElPosTop=e.offsetTop
+        const hostElHeight=e.clientHeight
+        const hostElWidth=e.clientWidth
+
+        const x = hostElPosLeft + hostElWidth -20
+        const y = hostElPosTop - 40
+        
+        toolTipElement.style.left = x + 'px'
+        toolTipElement.style.top = y +'px'
+        // if (!card){}
+        e.insertAdjacentElement('afterend', toolTipElement)
+        // toolTipElement.insertAdjacentElement('afterbegin', toolTipElementInside)
+        // toolTipElementInside.insertAdjacentElement('afterbegin', toolTipElementCaret)
+    }
+</script>

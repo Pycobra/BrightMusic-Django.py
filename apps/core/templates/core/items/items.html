@@ -1,0 +1,40 @@
+{% comment %} {% extends 'core/base.html' %}
+{% load static %}
+{% block styleSheets %}{% static 'styles/items.css' %}{% endblock %}
+ {% endcomment %}
+
+
+
+<div data-index={{obj.id}} id={{obj.id}}
+class="items {% if obj.selected %} is-checked {% endif %}{% if currentPage == 'ARTIST-PAGE' %} pointer {% endif %}">
+    <span class='img-holder'> 
+        <img class='img-top' src="{{obj.url}}" />
+        {% with checked='{{obj.selected}}' data='{{position}}' dataIndex='{{position}}' inputType='checkbox-1' name='{{imageSelected{position}}}' %}
+            {% include '../checkbox-input/checkbox-input.html' %}
+        {% endwith %}
+    </span>
+
+    {% if currentPage == 'FIRST-PAGE' %}
+    <div class='text-wrap'>
+        <div class='text'><span>Title:</span>
+            <span>{% if obj.title|length > 15 %} {{ obj.title|slice:":13" }} ... {% else %} {{obj.title}} {% endif %}</span>
+        </div>
+        <div class='text'><span>Year:</span><span> {{obj.release_year}}</span></div>
+        <div class='text'><span>Label:</span><span> {{obj.label}}</span></div>
+        <div class='text'><span>Genre:</span><span> {{obj.genre}}</span></div>
+        <div class='text'><span>Artist:</span><span> {{obj.name}}</span></div>
+    </div>
+    {% elif currentPage == 'ARTIST-PAGE' %}
+    <div class='text-wrap'>
+        <div class='text'><span>Name:</span>
+            <span>{% if obj.name|length > 15 %} {{ obj.name|slice:":13" }} ... {% else %} {{obj.name}} {% endif %}</span>
+        </div>
+        <div class='text'><span>Songs:</span><span>{% if obj.song|length > 15 %} songs {% endif %}</span></div>
+    </div>
+    {% endif %}
+</div>
+<script>
+    {% comment %} $(document).ready(function(){
+        
+    }) {% endcomment %}
+</script>
